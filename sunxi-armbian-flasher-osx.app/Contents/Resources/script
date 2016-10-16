@@ -1,0 +1,123 @@
+#!/bin/bash
+#
+# Copyright (c) 2016 Thomas Kaiser
+#
+# This file is licensed under the terms of the GNU General Public
+# License version 2. This program is licensed "as is" without any
+# warranty of any kind, whether express or implied.
+#
+# DESCRIPTION
+#
+# This is an application wrapper for sunxi-fel tool and accompanied u-boot + kernel
+# to fel boot Allwinner devices.
+#
+# CHANGES
+#
+# 1.0: - first version.
+#
+# TODO
+#
+# - add other Allwinner variants
+
+Main() {
+	export PATH=/bin:/usr/bin:/opt/local/bin:/usr/local/bin
+	
+	PathToFEL="${0%/*}"/sunxi-fel
+	PathToKeys="${0%/*}"/keys
+	
+	sleep 0.2
+	IsShiftPressed=$("${PathToKeys}" shift)
+	IsOptionPressed=$("${PathToKeys}" option)
+
+	# case ${IsShiftPressed} in
+	# do some fancy stuff based on modifier key pressed or not
+	
+	CountOfSunxiDevices=$("${PathToFEL}" ver 2>/dev/null | wc -l)
+	echo -e "Searching for Allwinner devices appearing on USB bus...\c"
+	while [ ${CountOfSunxiDevices} -ne 1 ]; do
+		sleep 0.5
+		CountOfSunxiDevices=$("${PathToFEL}" ver 2>/dev/null | wc -l)
+	done
+	
+	echo -e "\n"
+	StartFlashing
+	
+	# start Etcher if installed
+	open -b io.resin.etcher 2>/dev/null || echo -e "\nYour Allwinner device should now appear as an USB stick."
+} # Main
+
+StartFlashing() {
+	FELIdentifier="$("${PathToFEL}" ver)"
+	case ${FELIdentifier} in
+		*soc=00001623*)
+			echo -e "Found A10 device: ${FELIdentifier}"
+			BOARD=a10
+			"${PathToFEL}" -p uboot "${0%/*}/fel-mass-storage/$BOARD"/u-boot-sunxi-with-spl.bin \
+				write 0x42000000 "${0%/*}/fel-mass-storage/$BOARD"/zImage \
+				write 0x43000000 "${0%/*}/fel-mass-storage/$BOARD"/script.bin \
+				write 0x43300000 "${0%/*}/fel-mass-storage/$BOARD"/uInitrd \
+				write 0x43100000 "${0%/*}/fel-mass-storage/$BOARD"/boot.scr
+			;;
+		*soc=00001625*)
+			echo -e "Found A13 or R8 device: ${FELIdentifier}"
+			BOARD=a13
+			"${PathToFEL}" -p uboot "${0%/*}/fel-mass-storage/$BOARD"/u-boot-sunxi-with-spl.bin \
+				write 0x42000000 "${0%/*}/fel-mass-storage/$BOARD"/zImage \
+				write 0x43000000 "${0%/*}/fel-mass-storage/$BOARD"/script.bin \
+				write 0x43300000 "${0%/*}/fel-mass-storage/$BOARD"/uInitrd \
+				write 0x43100000 "${0%/*}/fel-mass-storage/$BOARD"/boot.scr
+			;;
+		*soc=00001651*)
+			echo -e "Found A20 device: ${FELIdentifier}"
+			BOARD=a20
+			"${PathToFEL}" -p uboot "${0%/*}/fel-mass-storage/$BOARD"/u-boot-sunxi-with-spl.bin \
+				write 0x42000000 "${0%/*}/fel-mass-storage/$BOARD"/zImage \
+				write 0x43000000 "${0%/*}/fel-mass-storage/$BOARD"/script.bin \
+				write 0x43300000 "${0%/*}/fel-mass-storage/$BOARD"/uInitrd \
+				write 0x43100000 "${0%/*}/fel-mass-storage/$BOARD"/boot.scr
+			;;
+		*soc=00001680*)
+			echo -e "Found H3 device: ${FELIdentifier}"
+			BOARD=h3
+			"${PathToFEL}" -p uboot "${0%/*}/fel-mass-storage/$BOARD"/u-boot-sunxi-with-spl.bin \
+				write 0x42000000 "${0%/*}/fel-mass-storage/$BOARD"/zImage \
+				write 0x43000000 "${0%/*}/fel-mass-storage/$BOARD"/script.bin \
+				write 0x43300000 "${0%/*}/fel-mass-storage/$BOARD"/uInitrd \
+				write 0x43100000 "${0%/*}/fel-mass-storage/$BOARD"/boot.scr
+			;;
+		*soc=00001689*)
+			echo -e "Found A64 device: ${FELIdentifier}"
+			BOARD=a64
+			"${PathToFEL}" -p uboot "${0%/*}/fel-mass-storage/$BOARD"/u-boot-sunxi-with-spl.bin \
+				write 0x42000000 "${0%/*}/fel-mass-storage/$BOARD"/zImage \
+				write 0x43000000 "${0%/*}/fel-mass-storage/$BOARD"/script.bin \
+				write 0x43300000 "${0%/*}/fel-mass-storage/$BOARD"/uInitrd \
+				write 0x43100000 "${0%/*}/fel-mass-storage/$BOARD"/boot.scr
+			;;
+		*soc=00001673*)
+			echo -e "Found A83 device: ${FELIdentifier}"
+			BOARD=a83
+			"${PathToFEL}" -p uboot "${0%/*}/fel-mass-storage/$BOARD"/u-boot-sunxi-with-spl.bin \
+				write 0x42000000 "${0%/*}/fel-mass-storage/$BOARD"/zImage \
+				write 0x43000000 "${0%/*}/fel-mass-storage/$BOARD"/script.bin \
+				write 0x43300000 "${0%/*}/fel-mass-storage/$BOARD"/uInitrd \
+				write 0x43100000 "${0%/*}/fel-mass-storage/$BOARD"/boot.scr
+			;;
+	esac
+} # StartFlashing
+
+DisplayWarning() {
+	if [ $? -eq 0 ]; then
+		Buttons='{"More Info", "OK"}'
+	else
+		Buttons='{"OK"}'
+	fi
+	osascript <<-EOF
+		tell application "System Events"
+			activate
+			set ButtonPressed to (button returned of (display dialog "${DeviceName} (${DeviceShortName})" & return & "${DisplayString}" buttons ${Buttons} default button 1 with icon caution giving up after 30))
+		end tell
+	EOF
+} # DisplayWarning
+
+Main "$@"

@@ -13,7 +13,7 @@ Application bundle structure currently looks like this:
 	Contents:
 		Info.plist
 		MacOS:
-			h3-flashtool
+			sunxi-armbian-flasher-osx
 		Resources:
 			AppSettings.plist
 			fel-mass-storage:
@@ -22,6 +22,7 @@ Application bundle structure currently looks like this:
 					LICENSE.sunxi-tools
 					LICENSE.u-boot
 					u-boot.config
+				fel-sdboot.img
 				h3:
 					boot.scr
 					script.bin
