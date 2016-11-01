@@ -1,6 +1,6 @@
 # Overview
 
-`sunxi-armbian-flasher-osx` is an example application wrapper around `sunxi-fel` and https://github.com/zador-blood-stained/fel-mass-storage
+`sunxi-armbian-flasher-osx` is an example application wrapper around `sunxi-fel` and https://github.com/zador-blood-stained/fel-mass-storage. **Important:** You always have to ensure that your device enters FEL mode correctly, on some eMMC equipped devices like Orange Pi PC Plus or NanoPi Air this requires flashing the `fel-sdboot.img` image first and booting the device from it (right/control click on the application bundle, choose 'show package contents' and navigate to `Contents/Resources/fel-mass-storage`).
 
 It has been made using [Platypus](https://www.macupdate.com/app/mac/12046/platypus) and the main parts are contained inside the `Resources` directory and can also be updated there in place. 
 
